@@ -395,6 +395,10 @@ DBErrors CWalletDB::LoadWallet(CWallet* pwallet)
     bool fAnyUnordered = false;
     bool fNoncriticalErrors = false;
     DBErrors result = DB_LOAD_OK;
+    int nCount = 0;
+    int nCountLevel = 0;
+    int const levelCounts[] = { 100, 10, 500, 4, 1000, 10, 2500, 4, 10000, 10, 25000, 10, 100000, 10, 1000000, -1 };
+    int nCountNextLevel = levelCounts[0] * levelCounts[1];
 
     try {
         LOCK(pwallet->cs_wallet);
@@ -448,7 +452,24 @@ DBErrors CWalletDB::LoadWallet(CWallet* pwallet)
             }
             if (!strErr.empty())
                 printf("%s\n", strErr.c_str());
+            else {
+                nCount += 1;
+                if( ( nCount % levelCounts[nCountLevel] ) == 0 ) {
+                    printf("%d...", nCount);
+                    fflush(stdout);
+
+                    if( nCount >= nCountNextLevel ) {
+                        nCountLevel += 2;
+                        if( levelCounts[nCountLevel + 1] == -1 ) {
+                            nCountNextLevel = 0x7FFFFFFF;
+                        } else {
+                            nCountNextLevel += levelCounts[nCountLevel] * levelCounts[nCountLevel+1];
+                        }
+                    }
+                }
+            }
         }
+        printf("done.\n");
         pcursor->close();
     }
     catch (boost::thread_interrupted) {

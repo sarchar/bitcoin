@@ -1075,6 +1075,63 @@ Value listtransactions(const Array& params, bool fHelp)
     return ret;
 }
 
+Value listtransactions2(const Array& params, bool fHelp)
+{
+    if (fHelp || params.size() > 3)
+        throw runtime_error(
+            "listtransactions2 [account] [count=10] [start=0]\n"
+            "Returns up to [count] most recent transactions skipping the first [start] transactions for account [account].");
+
+    string strAccount = "*";
+    if (params.size() > 0)
+        strAccount = params[0].get_str();
+    int nCount = 10;
+    if (params.size() > 1)
+        nCount = params[1].get_int();
+    int nStart = 0;
+    if (params.size() > 2)
+        nStart = params[2].get_int();
+
+    if (nCount < 0)
+        throw JSONRPCError(RPC_INVALID_PARAMETER, "Negative count");
+    if (nStart < 0)
+        throw JSONRPCError(RPC_INVALID_PARAMETER, "Negative from");
+
+    Array ret;
+
+    std::list<CAccountingEntry> acentries;
+    CWallet::TxItems txOrdered = pwalletMain->OrderedTxItems(acentries, strAccount);
+
+    // Now: iterate until we have nCount items to return:
+    CWallet::TxItems::iterator it = txOrdered.begin();
+    if (txOrdered.size() > nStart) {
+        std::advance(it, nStart);
+        for (; it != txOrdered.end(); ++it)
+        {
+            CWalletTx *const pwtx = (*it).second.first;
+            if (pwtx != 0)
+                ListTransactions(*pwtx, strAccount, 0, true, ret);
+            CAccountingEntry *const pacentry = (*it).second.second;
+            if (pacentry != 0)
+                AcentryToJSON(*pacentry, strAccount, ret);
+
+            if (ret.size() >= nCount) break;
+        }
+    }
+
+    // Make sure we return only last nCount items (sends-to-self might give us an extra):
+    if (ret.size() > nCount)
+    {
+        Array::iterator last = ret.begin();
+        std::advance(last, nCount);
+        ret.erase(last, ret.end());
+    }
+
+    return ret;
+}
+
+
+
 Value listaccounts(const Array& params, bool fHelp)
 {
     if (fHelp || params.size() > 1)
