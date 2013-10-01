@@ -97,6 +97,7 @@ void locking_callback(int mode, int i, const char* file, int line)
 }
 
 LockedPageManager* LockedPageManager::_instance = NULL;
+boost::once_flag LockedPageManager::init_flag = BOOST_ONCE_INIT;
 
 // Init
 class CInit

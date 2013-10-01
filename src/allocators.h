@@ -8,6 +8,7 @@
 #include <string.h>
 #include <string>
 #include <boost/thread/mutex.hpp>
+#include <boost/thread/once.hpp>
 #include <map>
 #include <openssl/crypto.h> // for OPENSSL_cleanse()
 
@@ -171,20 +172,25 @@ class LockedPageManager: public LockedPageManagerBase<MemoryPageLocker>
 public:
     static LockedPageManager& Instance() 
     {
-        if( LockedPageManager::_instance == NULL ) 
-        {
-            // TODO - deallocate _instance at shutdown?
-            LockedPageManager::_instance = new LockedPageManager();
-        }
+        boost::call_once( LockedPageManager::CreateInstance, LockedPageManager::init_flag );
         return *LockedPageManager::_instance;
     }
+
 
 private:
     LockedPageManager():
         LockedPageManagerBase<MemoryPageLocker>(GetSystemPageSize())
     {}
 
-    static LockedPageManager* _instance; // instantiated in util.cpp
+    static void CreateInstance()
+    {
+        // TODO - deallocate _instance at shutdown?
+        LockedPageManager::_instance = new LockedPageManager();
+    }
+
+    // these initialized in util.cpp
+    static LockedPageManager* _instance;
+    static boost::once_flag init_flag;
 };
 
 //
