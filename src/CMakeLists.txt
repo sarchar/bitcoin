@@ -30,3 +30,5 @@ set_target_properties(Bitcoind PROPERTIES COMPILE_DEFINITIONS_RELWITHDEBINFO "_C
 
 install(TARGETS Bitcoind DESTINATION .)
 
+add_subdirectory(test)
+

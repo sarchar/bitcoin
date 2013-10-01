@@ -1,3 +1,13 @@
+# This file is used in part of the MSVC CMake build
+# to replace the unix hexdump & sed calls otherwise
+# used.
+#
+# Unfortunately this creates a dependency on Python
+# 2.x, but that's trivial as only a few Win32 
+# developers will ever be building...
+#
+# TODO - figure out another way to generate
+# these hexdump files..
 import sys
 
 def main():

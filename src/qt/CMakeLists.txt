@@ -80,4 +80,4 @@ foreach(_file ${BITCOIN_QT_LOCALES})
 endforeach()
 
 target_link_libraries(BitcoinQt BitcoinCore shlwapi ${QT_QTGUI_LIBRARY} ${QT_QTCORE_LIBRARY} ${QT_QTNETWORK_LIBRARY} ${QT_QTMAIN_LIBRARY} ${GPB_LIBRARY})
-
+install(TARGETS BitcoinQt DESTINATION .)
