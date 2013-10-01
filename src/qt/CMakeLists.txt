@@ -19,8 +19,17 @@ SET(BITCOIN_QT_RES_IMAGES res/images/about.png res/images/splash.png res/images/
 SET(BITCOIN_QT_RES_MOVIES res/movies/update_spinner.mng)
 
 # TODO enable/disable the QRCode sources?
-# set(BITCOIN_QT_SOURCES ${BITCOIN_QT_SOURCES} qrcodedialog.cpp)
-# set(BITCOIN_QT_MOC_HEADERS ${BITCMOCOIN_QT_MOC_HEADERS} qrcodedialog.h)
+find_package(QREncode)
+if(QRENCODE_FOUND)
+    set(BITCOIN_QT_SOURCES ${BITCOIN_QT_SOURCES} qrcodedialog.cpp)
+    set(BITCOIN_QT_MOC_HEADERS ${BITCOIN_QT_MOC_HEADERS} qrcodedialog.h)
+    set(QRENCODE_USE_LIBRARY ${QRENCODE_LIBRARY})
+    include_directories(${QRENCODE_INCLUDE_DIRS})
+    add_definitions(/DUSE_QRCODE=1)
+else()
+    MESSAGE(STATUS "*** Not building QREncode dialog!")
+    set(QRENCODE_USE_LIBRARY )
+endif()
 
 QT4_WRAP_UI(BITCOIN_QT_FORMS_HEADERS ${BITCOIN_QT_FORMS})
 QT4_WRAP_CPP(BITCOIN_QT_MOC_SOURCES ${BITCOIN_QT_MOC_HEADERS})
@@ -79,5 +88,5 @@ foreach(_file ${BITCOIN_QT_LOCALES})
     SET(BITCOIN_QT_LOCALE_SOURCES ${BITCOIN_QT_LOCALE_SOURCES} ${_qm_file})
 endforeach()
 
-target_link_libraries(BitcoinQt BitcoinCore shlwapi ${QT_QTGUI_LIBRARY} ${QT_QTCORE_LIBRARY} ${QT_QTNETWORK_LIBRARY} ${QT_QTMAIN_LIBRARY} ${GPB_LIBRARY})
+target_link_libraries(BitcoinQt BitcoinCore shlwapi ${QT_QTGUI_LIBRARY} ${QT_QTCORE_LIBRARY} ${QT_QTNETWORK_LIBRARY} ${QT_QTMAIN_LIBRARY} ${GPB_LIBRARY} ${QRENCODE_USE_LIBRARY})
 install(TARGETS BitcoinQt DESTINATION .)

@@ -11,7 +11,7 @@ find_library(GPB_RELEASE_LIBRARY libprotobuf  HINTS "${GPB_ROOT}/vsprojects/Rele
 find_library(GPB_DEBUG_LIBRARY libprotobuf  HINTS "${GPB_ROOT}/vsprojects/Debug")
 
 set(GPB_LIBRARY optimized ${GPB_RELEASE_LIBRARY} debug ${GPB_DEBUG_LIBRARY})
-set(GPB_INCLUDE_DIRS ${BDB_INCLUDE_DIR})
+set(GPB_INCLUDE_DIRS ${GPB_INCLUDE_DIR})
 set(GPB_PROTOC ${GPB_ROOT}/vsprojects/Release/protoc.exe)
 
 include(FindPackageHandleStandardArgs)
