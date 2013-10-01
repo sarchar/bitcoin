@@ -670,6 +670,7 @@ int CNetMessage::readHeader(const char *pch, unsigned int nBytes)
         hdrbuf >> hdr;
     }
     catch (std::exception &e) {
+		(void)e;
         return -1;
     }
 

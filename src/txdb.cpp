@@ -153,7 +153,12 @@ bool CCoinsViewDB::GetStats(CCoinsStats &stats) {
             }
             pcursor->Next();
         } catch (std::exception &e) {
+			(void)e;
+#if defined(_MSC_VER)
+			return error("%s() : deserialize error", __FUNCSIG__);
+#else
             return error("%s() : deserialize error", __PRETTY_FUNCTION__);
+#endif
         }
     }
     delete pcursor;
@@ -235,7 +240,12 @@ bool CBlockTreeDB::LoadBlockIndexGuts()
                 break; // if shutdown requested or finished loading block index
             }
         } catch (std::exception &e) {
+			(void)e;
+#if defined(_MSC_VER)
+			return error("%s() : deserialize error", __FUNCSIG__);
+#else
             return error("%s() : deserialize error", __PRETTY_FUNCTION__);
+#endif
         }
     }
     delete pcursor;

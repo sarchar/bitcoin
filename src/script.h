@@ -277,9 +277,7 @@ public:
     CScript() { }
     CScript(const CScript& b) : std::vector<unsigned char>(b.begin(), b.end()) { }
     CScript(const_iterator pbegin, const_iterator pend) : std::vector<unsigned char>(pbegin, pend) { }
-#ifndef _MSC_VER
     CScript(const unsigned char* pbegin, const unsigned char* pend) : std::vector<unsigned char>(pbegin, pend) { }
-#endif
 
     CScript& operator+=(const CScript& b)
     {
@@ -653,12 +651,13 @@ public:
     void Serialize(Stream &s, int nType, int nVersion) const {
         std::vector<unsigned char> compr;
         if (Compress(compr)) {
-            s << CFlatData(&compr[0], &compr[compr.size()]);
+            s << CFlatData(&compr[0], &compr[0]+compr.size());
             return;
         }
         unsigned int nSize = script.size() + nSpecialScripts;
         s << VARINT(nSize);
-        s << CFlatData(&script[0], &script[script.size()]);
+		unsigned char* scriptData = script.size() == 0 ? (unsigned char*)"" : &script[0];
+		s << CFlatData(scriptData, scriptData+script.size());
     }
 
     template<typename Stream>
@@ -667,13 +666,13 @@ public:
         s >> VARINT(nSize);
         if (nSize < nSpecialScripts) {
             std::vector<unsigned char> vch(GetSpecialSize(nSize), 0x00);
-            s >> REF(CFlatData(&vch[0], &vch[vch.size()]));
+            s >> REF(CFlatData(&vch[0], &vch[0]+vch.size()));
             Decompress(nSize, vch);
             return;
         }
         nSize -= nSpecialScripts;
         script.resize(nSize);
-        s >> REF(CFlatData(&script[0], &script[script.size()]));
+		if(nSize > 0) s >> REF(CFlatData(&script[0], &script[0]+script.size()));
     }
 };
 

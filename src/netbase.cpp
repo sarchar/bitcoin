@@ -8,7 +8,9 @@
 #include "sync.h"
 #include "hash.h"
 
-#ifndef WIN32
+#ifdef _MSC_VER
+typedef long ssize_t;
+#else
 #include <fcntl.h>
 #endif
 

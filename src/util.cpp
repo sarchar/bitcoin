@@ -314,10 +314,12 @@ string vstrprintf(const char *format, va_list ap)
     while (true)
     {
         va_list arg_ptr;
-        va_copy(arg_ptr, ap);
-#ifdef WIN32
+        
+#ifdef _MSC_VER
+		arg_ptr = ap;
         ret = _vsnprintf(p, limit, format, arg_ptr);
 #else
+		va_copy(arg_ptr, ap);
         ret = vsnprintf(p, limit, format, arg_ptr);
 #endif
         va_end(arg_ptr);
@@ -1256,7 +1258,7 @@ void ShrinkDebugFile()
     {
         // Restart the file with some of the end
         char pch[200000];
-        fseek(file, -sizeof(pch), SEEK_END);
+        fseek(file, -(long)sizeof(pch), SEEK_END);
         int nBytes = fread(pch, 1, sizeof(pch), file);
         fclose(file);
 

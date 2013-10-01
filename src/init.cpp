@@ -557,6 +557,7 @@ bool AppInit2(boost::thread_group& threadGroup)
             LogPrintf("Moved old %s to %s. Retrying.\n", pathDatabase.string().c_str(), pathDatabaseBak.string().c_str());
         } catch(boost::filesystem::filesystem_error &error) {
              // failure is ok (well, not really, but it's not worse than what we started with)
+			(void)error;
         }
 
         // try again

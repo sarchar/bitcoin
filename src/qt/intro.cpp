@@ -91,6 +91,7 @@ void FreespaceChecker::check()
     } catch(fs::filesystem_error &e)
     {
         /* Parent directory does not exist or is not accessible */
+		(void)e;
         replyStatus = ST_ERROR;
         replyMessage = tr("Cannot create data directory here.");
     }
@@ -177,6 +178,7 @@ void Intro::pickDataDirectory(bool fIsTestnet)
                 fs::create_directory(dataDir.toStdString());
                 break;
             } catch(fs::filesystem_error &e) {
+				(void)e;
                 QMessageBox::critical(0, QObject::tr("Bitcoin"),
                                       QObject::tr("Error: Specified data directory \"%1\" can not be created.").arg(dataDir));
                 /* fall through, back to choosing screen */

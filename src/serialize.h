@@ -22,6 +22,12 @@
 #include "allocators.h"
 #include "version.h"
 
+#ifdef _MSC_VER
+#pragma warning( disable : 4244 )
+#undef max
+#undef min
+#endif
+
 typedef long long  int64;
 typedef unsigned long long  uint64;
 
@@ -845,7 +851,7 @@ public:
         Init(nTypeIn, nVersionIn);
     }
 
-    CDataStream(const std::vector<unsigned char>& vchIn, int nTypeIn, int nVersionIn) : vch((char*)&vchIn.begin()[0], (char*)&vchIn.end()[0])
+    CDataStream(const std::vector<unsigned char>& vchIn, int nTypeIn, int nVersionIn) : vch((char*)&vchIn.begin()[0], (char*)&vchIn[0]+vchIn.size())
     {
         Init(nTypeIn, nVersionIn);
     }

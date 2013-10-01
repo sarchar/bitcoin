@@ -376,6 +376,7 @@ Value submitblock(const Array& params, bool fHelp)
         ssBlock >> pblock;
     }
     catch (std::exception &e) {
+		(void)e;
         throw JSONRPCError(RPC_DESERIALIZATION_ERROR, "Block decode failed");
     }
 

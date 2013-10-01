@@ -25,6 +25,9 @@
 // Note that VirtualLock does not provide this as a guarantee on Windows,
 // but, in practice, memory that has been VirtualLock'd almost never gets written to
 // the pagefile except in rare circumstances where memory is extremely low.
+#ifdef _MSC_VER
+#pragma warning( disable : 4800 )
+#endif
 #else
 #include <sys/mman.h>
 #include <limits.h> // for PAGESIZE

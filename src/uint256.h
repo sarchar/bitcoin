@@ -8,9 +8,14 @@
 #include <limits.h>
 #include <stdio.h>
 #include <string.h>
-#include <inttypes.h>
 #include <string>
 #include <vector>
+
+#ifdef _MSC_VER
+#include <stdint.h>
+#else
+#include <inttypes.h>
+#endif
 
 typedef long long  int64;
 typedef unsigned long long  uint64;

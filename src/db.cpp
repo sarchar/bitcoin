@@ -519,6 +519,7 @@ bool CAddrDB::Write(const CAddrMan& addr)
         fileout << ssPeers;
     }
     catch (std::exception &e) {
+		(void)e;
         return error("CAddrman::Write() : I/O error");
     }
     FileCommit(fileout);
@@ -554,6 +555,7 @@ bool CAddrDB::Read(CAddrMan& addr)
         filein >> hashIn;
     }
     catch (std::exception &e) {
+		(void)e;
         return error("CAddrman::Read() 2 : I/O error or stream data corrupted");
     }
     filein.fclose();
@@ -578,6 +580,7 @@ bool CAddrDB::Read(CAddrMan& addr)
         ssPeers >> addr;
     }
     catch (std::exception &e) {
+		(void)e;
         return error("CAddrman::Read() : I/O error or stream data corrupted");
     }
 

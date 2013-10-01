@@ -132,6 +132,7 @@ protected:
             ssValue >> value;
         }
         catch (std::exception &e) {
+			(void)e;
             return false;
         }
 

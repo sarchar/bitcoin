@@ -129,6 +129,7 @@ bool OptionsModel::Upgrade()
     catch (std::ios_base::failure &e)
     {
         // 0.6.0rc1 saved this as a CService, which causes failure when parsing as a CAddress
+		(void)e;
         CService addrProxy;
         if (walletdb.ReadSetting("addrProxy", addrProxy))
         {

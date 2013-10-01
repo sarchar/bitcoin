@@ -7,6 +7,10 @@
 #include "bitcoinrpc.h"
 #include <boost/algorithm/string/predicate.hpp>
 
+#if defined(_MSC_VER)
+#pragma comment(linker, "/SUBSYSTEM:CONSOLE")
+#endif
+
 void DetectShutdownThread(boost::thread_group* threadGroup)
 {
     bool shutdown = ShutdownRequested();

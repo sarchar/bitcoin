@@ -75,7 +75,6 @@ extern CScript COINBASE_FLAGS;
 extern CCriticalSection cs_main;
 extern std::map<uint256, CBlockIndex*> mapBlockIndex;
 extern std::vector<CBlockIndex*> vBlockIndexByHeight;
-extern std::set<CBlockIndex*, CBlockIndexWorkComparator> setBlockIndexValid;
 extern CBlockIndex* pindexGenesisBlock;
 extern int nBestHeight;
 extern uint256 nBestChainWork;
@@ -385,7 +384,12 @@ public:
             filein >> hashChecksum;
         }
         catch (std::exception &e) {
-            return error("%s() : deserialize or I/O error", __PRETTY_FUNCTION__);
+			(void)e;
+#if defined(_MSC_VER)
+            return error("%s() : deserialize or I/O error", __FUNCSIG__);
+#else
+			return error("%s() : deserialize or I/O error", __PRETTY_FUNCTION__);
+#endif
         }
 
         // Verify checksum
@@ -895,7 +899,7 @@ struct CBlockIndexWorkComparator
     }
 };
 
-
+extern std::set<CBlockIndex*, CBlockIndexWorkComparator> setBlockIndexValid;
 
 /** Used to marshal pointers into hashes for db storage. */
 class CDiskBlockIndex : public CBlockIndex

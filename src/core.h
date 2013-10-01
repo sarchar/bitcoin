@@ -251,18 +251,21 @@ public:
 
     CTxOutCompressor(CTxOut &txoutIn) : txout(txoutIn) { }
 
-    IMPLEMENT_SERIALIZE(({
-        if (!fRead) {
-            uint64 nVal = CompressAmount(txout.nValue);
-            READWRITE(VARINT(nVal));
-        } else {
-            uint64 nVal = 0;
-            READWRITE(VARINT(nVal));
-            txout.nValue = DecompressAmount(nVal);
-        }
-        CScriptCompressor cscript(REF(txout.scriptPubKey));
-        READWRITE(cscript);
-    });)
+#define IS {                                                \
+        if (!fRead) {                                       \
+            uint64 nVal = CompressAmount(txout.nValue);     \
+            READWRITE(VARINT(nVal));                        \
+        } else {                                            \
+            uint64 nVal = 0;                                \
+            READWRITE(VARINT(nVal));                        \
+            txout.nValue = DecompressAmount(nVal);          \
+        }                                                   \
+        CScriptCompressor cscript(REF(txout.scriptPubKey)); \
+        READWRITE(cscript);                                 \
+    }
+
+    IMPLEMENT_SERIALIZE(IS)
+#undef IS
 };
 
 /** Undo information for a CTxIn

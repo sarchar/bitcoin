@@ -1155,11 +1155,20 @@ bool GetTransaction(const uint256 &hash, CTransaction &txOut, uint256 &hashBlock
                     fseek(file, postx.nTxOffset, SEEK_CUR);
                     file >> txOut;
                 } catch (std::exception &e) {
-                    return error("%s() : deserialize or I/O error", __PRETTY_FUNCTION__);
+					(void)e;
+#if defined(_MSC_VER)
+                    return error("%s() : deserialize or I/O error", __FUNCSIG__);
+#else
+					return error("%s() : deserialize or I/O error", __PRETTY_FUNCTION__);
+#endif
                 }
                 hashBlock = header.GetHash();
                 if (txOut.GetHash() != hash)
+#if defined(_MSC_VER)
+					return error("%s() : txid mismatch", __FUNCSIG__);
+#else
                     return error("%s() : txid mismatch", __PRETTY_FUNCTION__);
+#endif
                 return true;
             }
         }
@@ -1251,7 +1260,12 @@ bool ReadBlockFromDisk(CBlock& block, const CDiskBlockPos& pos)
         filein >> block;
     }
     catch (std::exception &e) {
+		(void)e;
+#if defined(_MSC_VER)
+		return error("%s() : deserialize or I/O error", __FUNCSIG__);
+#else
         return error("%s() : deserialize or I/O error", __PRETTY_FUNCTION__);
+#endif
     }
 
     // Check the header
@@ -3132,6 +3146,7 @@ bool LoadExternalBlockFile(FILE* fileIn, CDiskBlockPos *dbp)
                     continue;
             } catch (std::exception &e) {
                 // no valid block header found; don't complain
+				(void)e;
                 break;
             }
             try {
@@ -3154,7 +3169,12 @@ bool LoadExternalBlockFile(FILE* fileIn, CDiskBlockPos *dbp)
                         break;
                 }
             } catch (std::exception &e) {
+				(void)e;
+#if defined(_MSC_VER)
+				LogPrintf("%s() : Deserialize or I/O error caught during load\n", __FUNCSIG__);
+#else
                 LogPrintf("%s() : Deserialize or I/O error caught during load\n", __PRETTY_FUNCTION__);
+#endif
             }
         }
         fclose(fileIn);
