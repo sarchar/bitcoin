@@ -100,6 +100,7 @@ static CCoinsViewDB *pcoinsdbview;
 
 void Shutdown()
 {
+    LogPrintf("Shutdown : In progress...\n");
     static CCriticalSection cs_Shutdown;
     TRY_LOCK(cs_Shutdown, lockShutdown);
     if (!lockShutdown) return;
@@ -108,7 +109,8 @@ void Shutdown()
     nTransactionsUpdated++;
     StopRPCThreads();
     ShutdownRPCMining();
-    bitdb.Flush(false);
+    if (pwalletMain)
+        bitdb.Flush(false);
     GenerateBitcoins(false, NULL);
     StopNode();
     {
@@ -123,10 +125,13 @@ void Shutdown()
         delete pcoinsdbview; pcoinsdbview = NULL;
         delete pblocktree; pblocktree = NULL;
     }
-    bitdb.Flush(true);
+    if (pwalletMain)
+        bitdb.Flush(true);
     boost::filesystem::remove(GetPidFile());
     UnregisterAllWallets();
-    delete pwalletMain;
+    if (pwalletMain)
+        delete pwalletMain;
+    LogPrintf("Shutdown : done\n");
 }
 
 //
@@ -339,8 +344,8 @@ bool AppInit2(boost::thread_group& threadGroup)
     // Minimum supported OS versions: WinXP SP3, WinVista >= SP1, Win Server 2008
     // A failure is non-critical and needs no further attention!
 #ifndef PROCESS_DEP_ENABLE
-// We define this here, because GCCs winbase.h limits this to _WIN32_WINNT >= 0x0601 (Windows 7),
-// which is not correct. Can be removed, when GCCs winbase.h is fixed!
+    // We define this here, because GCCs winbase.h limits this to _WIN32_WINNT >= 0x0601 (Windows 7),
+    // which is not correct. Can be removed, when GCCs winbase.h is fixed!
 #define PROCESS_DEP_ENABLE 0x00000001
 #endif
     typedef BOOL (WINAPI *PSETPROCDEPPOL)(DWORD);
@@ -982,9 +987,9 @@ bool AppInit2(boost::thread_group& threadGroup)
     //// debug print
     LogPrintf("mapBlockIndex.size() = %"PRIszu"\n",   mapBlockIndex.size());
     LogPrintf("nBestHeight = %d\n",                   nBestHeight);
-    LogPrintf("setKeyPool.size() = %"PRIszu"\n",      pwalletMain->setKeyPool.size());
-    LogPrintf("mapWallet.size() = %"PRIszu"\n",       pwalletMain->mapWallet.size());
-    LogPrintf("mapAddressBook.size() = %"PRIszu"\n",  pwalletMain->mapAddressBook.size());
+    LogPrintf("setKeyPool.size() = %"PRIszu"\n",      pwalletMain ? pwalletMain->setKeyPool.size() : 0);
+    LogPrintf("mapWallet.size() = %"PRIszu"\n",       pwalletMain ? pwalletMain->mapWallet.size() : 0);
+    LogPrintf("mapAddressBook.size() = %"PRIszu"\n",  pwalletMain ? pwalletMain->mapAddressBook.size() : 0);
 
     StartNode(threadGroup);
 
@@ -994,17 +999,20 @@ bool AppInit2(boost::thread_group& threadGroup)
         StartRPCThreads();
 
     // Generate coins in the background
-    GenerateBitcoins(GetBoolArg("-gen", false), pwalletMain);
+    if (pwalletMain)
+        GenerateBitcoins(GetBoolArg("-gen", false), pwalletMain);
 
     // ********************************************************* Step 12: finished
 
     uiInterface.InitMessage(_("Done loading"));
 
-     // Add wallet transactions that aren't already in a block to mapTransactions
-    pwalletMain->ReacceptWalletTransactions();
+    if (pwalletMain) {
+        // Add wallet transactions that aren't already in a block to mapTransactions
+        pwalletMain->ReacceptWalletTransactions();
 
-    // Run a thread to flush wallet periodically
-    threadGroup.create_thread(boost::bind(&ThreadFlushWalletDB, boost::ref(pwalletMain->strWalletFile)));
+        // Run a thread to flush wallet periodically
+        threadGroup.create_thread(boost::bind(&ThreadFlushWalletDB, boost::ref(pwalletMain->strWalletFile)));
+    }
 
     return !fRequestShutdown;
 }
