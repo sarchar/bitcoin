@@ -1,5 +1,5 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
-// Copyright (c) 2009-2012 The Bitcoin developers
+// Copyright (c) 2009-2013 The Bitcoin developers
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 #ifndef BITCOIN_ALLOCATORS_H
@@ -12,28 +12,6 @@
 #include <map>
 #include <openssl/crypto.h> // for OPENSSL_cleanse()
 
-#ifdef WIN32
-#ifdef _WIN32_WINNT
-#undef _WIN32_WINNT
-#endif
-#define _WIN32_WINNT 0x0501
-#define WIN32_LEAN_AND_MEAN 1
-#ifndef NOMINMAX
-#define NOMINMAX
-#endif
-#include <windows.h>
-// This is used to attempt to keep keying material out of swap
-// Note that VirtualLock does not provide this as a guarantee on Windows,
-// but, in practice, memory that has been VirtualLock'd almost never gets written to
-// the pagefile except in rare circumstances where memory is extremely low.
-#ifdef _MSC_VER
-#pragma warning( disable : 4800 )
-#endif
-#else
-#include <sys/mman.h>
-#include <limits.h> // for PAGESIZE
-#include <unistd.h> // for sysconf
-#endif
 
 /**
  * Thread-safe class to keep track of locked (ie, non-swappable) memory pages.
@@ -56,6 +34,12 @@ public:
         assert(!(page_size & (page_size-1))); // size must be power of two
         page_mask = ~(page_size - 1);
     }
+
+    ~LockedPageManagerBase()
+    {
+        assert(this->GetLockedPageCount() == 0);
+    }
+
 
     // For all pages in affected range, increase lock count
     void LockRange(void *p, size_t size)
@@ -119,21 +103,6 @@ private:
     Histogram histogram;
 };
 
-/** Determine system page size in bytes */
-static inline size_t GetSystemPageSize()
-{
-    size_t page_size;
-#if defined(WIN32)
-    SYSTEM_INFO sSysInfo;
-    GetSystemInfo(&sSysInfo);
-    page_size = sSysInfo.dwPageSize;
-#elif defined(PAGESIZE) // defined in limits.h
-    page_size = PAGESIZE;
-#else // assume some POSIX OS
-    page_size = sysconf(_SC_PAGESIZE);
-#endif
-    return page_size;
-}
 
 /**
  * OS-dependent memory page locking/unlocking.
@@ -145,36 +114,30 @@ public:
     /** Lock memory pages.
      * addr and len must be a multiple of the system page size
      */
-    bool Lock(const void *addr, size_t len)
-    {
-#ifdef WIN32
-        return VirtualLock(const_cast<void*>(addr), len);
-#else
-        return mlock(addr, len) == 0;
-#endif
-    }
+    bool Lock(const void *addr, size_t len);
     /** Unlock memory pages.
      * addr and len must be a multiple of the system page size
      */
-    bool Unlock(const void *addr, size_t len)
-    {
-#ifdef WIN32
-        return VirtualUnlock(const_cast<void*>(addr), len);
-#else
-        return munlock(addr, len) == 0;
-#endif
-    }
+    bool Unlock(const void *addr, size_t len);
 };
 
 /**
  * Singleton class to keep track of locked (ie, non-swappable) memory pages, for use in
  * std::allocator templates.
+ *
+ * Some implementations of the STL allocate memory in some constructors (i.e., see
+ * MSVC's vector<T> implementation where it allocates 1 byte of memory in the allocator.)
+ * Due to the unpredictable order of static initializers, we have to make sure the
+ * LockedPageManager instance exists before any other STL-based objects that use
+ * secure_allocator are created. So instead of having LockedPageManager also be
+ * static-intialized, it is created on demand.
  */
 class LockedPageManager: public LockedPageManagerBase<MemoryPageLocker>
 {
 public:
     static LockedPageManager& Instance() 
     {
+<<<<<<< HEAD
         boost::call_once( LockedPageManager::CreateInstance, LockedPageManager::init_flag );
         return *LockedPageManager::_instance;
     }
@@ -192,6 +155,26 @@ private:
     }
 
     // these initialized in util.cpp
+=======
+        boost::call_once(LockedPageManager::CreateInstance, LockedPageManager::init_flag);
+        return *LockedPageManager::_instance;
+    }
+
+private:
+    LockedPageManager();
+
+    static void CreateInstance()
+    {
+        // Using a local static instance guarantees that the object is initialized
+        // when it's first needed and also deinitialized after all objects that use
+        // it are done with it.  I can think of one unlikely scenario where we may
+        // have a static deinitialization order/problem, but the check in
+        // LockedPageManagerBase's destructor helps us detect if that ever happens.
+        static LockedPageManager instance;
+        LockedPageManager::_instance = &instance;
+    }
+
+>>>>>>> master
     static LockedPageManager* _instance;
     static boost::once_flag init_flag;
 };

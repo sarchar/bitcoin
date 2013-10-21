@@ -15,7 +15,7 @@ include_directories(./LevelDB/include)
 include_directories(./LevelDB/helpers)
 link_directories(${Boost_LIBRARY_DIRS})
 
-add_library(BitcoinCore addrman.cpp key.cpp rpcnet.cpp alert.cpp keystore.cpp rpcrawtransaction.cpp leveldb.cpp rpcwallet.cpp bitcoinrpc.cpp main.cpp script.cpp bloom.cpp miner.cpp chainparams.cpp net.cpp txdb.cpp checkpoints.cpp netbase.cpp util.cpp core.cpp noui.cpp version.cpp crypter.cpp protocol.cpp wallet.cpp db.cpp rpcblockchain.cpp walletdb.cpp hash.cpp rpcdump.cpp init.cpp rpcmining.cpp ${LEVELDB_SOURCES})
+add_library(BitcoinCore addrman.cpp allocators.cpp key.cpp rpcnet.cpp alert.cpp keystore.cpp rpcrawtransaction.cpp leveldb.cpp rpcwallet.cpp bitcoinrpc.cpp main.cpp script.cpp bloom.cpp miner.cpp chainparams.cpp net.cpp txdb.cpp checkpoints.cpp netbase.cpp util.cpp core.cpp noui.cpp version.cpp crypter.cpp protocol.cpp wallet.cpp db.cpp rpcblockchain.cpp walletdb.cpp hash.cpp rpcdump.cpp init.cpp rpcmining.cpp ${LEVELDB_SOURCES})
 target_link_libraries(BitcoinCore ${Boost_FILESYSTEM_LIBRARY} ${Boost_SYSTEM_LIBRARY} ${Boost_THREAD_LIBRARY} ${BDB_LIBRARY} LevelDB optimized ${SSL_EAY_RELEASE} ${LIB_EAY_RELEASE} debug ${SSL_EAY_DEBUG} ${LIB_EAY_DEBUG})
 add_subdirectory(Qt)
 
