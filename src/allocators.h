@@ -137,25 +137,6 @@ class LockedPageManager: public LockedPageManagerBase<MemoryPageLocker>
 public:
     static LockedPageManager& Instance() 
     {
-<<<<<<< HEAD
-        boost::call_once( LockedPageManager::CreateInstance, LockedPageManager::init_flag );
-        return *LockedPageManager::_instance;
-    }
-
-
-private:
-    LockedPageManager():
-        LockedPageManagerBase<MemoryPageLocker>(GetSystemPageSize())
-    {}
-
-    static void CreateInstance()
-    {
-        // TODO - deallocate _instance at shutdown?
-        LockedPageManager::_instance = new LockedPageManager();
-    }
-
-    // these initialized in util.cpp
-=======
         boost::call_once(LockedPageManager::CreateInstance, LockedPageManager::init_flag);
         return *LockedPageManager::_instance;
     }
@@ -174,7 +155,6 @@ private:
         LockedPageManager::_instance = &instance;
     }
 
->>>>>>> master
     static LockedPageManager* _instance;
     static boost::once_flag init_flag;
 };
